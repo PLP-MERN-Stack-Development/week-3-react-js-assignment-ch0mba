@@ -1,35 +1,61 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import TaskForm from "@/components/TaskForm";
+import TaskList from "@/components/TaskList";
+import TaskFilter from "@/components/TaskFilter";
+import ApiTaskList from "@/components/ApiTaskList";
+import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
+import ThemeToggle from "@/components/ThemeToggle";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [tasks, setTasks] = useState([]);
+  const [filter, setFilter] = useState("all"); // 'all', 'active', 'completed'
+
+  const addTask = (task) => {
+    setTasks((prevTasks) => [
+      { ...task, completed: false },
+      ...prevTasks,
+    ]);
+  };
+
+  const toggleTaskCompletion = (index) => {
+    setTasks((prevTasks) =>
+      prevTasks.map((task, i) =>
+        i === index ? { ...task, completed: !task.completed } : task
+      )
+    );
+  };
+
+  const deleteTask = (index) => {
+    setTasks((prevTasks) => prevTasks.filter((_, i) => i !== index));
+  };
+
+  let filteredTasks = [];
+  if (filter === "all") {
+    filteredTasks = tasks;
+  } else if (filter === "active") {
+    filteredTasks = tasks.filter((task) => !task.completed);
+  } else if (filter === "completed") {
+    filteredTasks = tasks.filter((task) => task.completed);
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div className="max-w-2xl mx-auto p-6 space-y-6">
+      <h1 className="text-2xl font-bold text-center">Task Manager</h1>
 
-export default App
+       < ThemeToggle />
+
+      <TaskForm onAdd={addTask} />
+      
+      <TaskFilter filter={filter} setFilter={setFilter} />
+
+      <TaskList
+        tasks={filteredTasks}
+        onToggleCompleted={toggleTaskCompletion}
+        onDelete={deleteTask}
+      />
+
+      <ApiTaskList />
+     
+    </div>
+  );
+}
